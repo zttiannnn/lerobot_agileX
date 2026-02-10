@@ -367,9 +367,9 @@ def convert_expand_to_lerobot_batch(
 
 if __name__ == "__main__":
     # 示例用法
-    lerobot_root = "/home/kleist/Documents/Database/test_0126/"
-    episodes_root = "/home/kleist/jemotor/log1/"  # 传入包含多个episode_xxxxxx的根目录
-    task = "Pick up the PCB board from the conveyor belt and place it into the yellow container."
+    lerobot_root = "/home/hyc/JE_robot_data_lerobot/"
+    episodes_root = "/home/hyc/JE_robot_data/"  # 传入包含多个episode_xxxxxx的根目录
+    task = "Put the purple carton of milk into the cardboard box."
     resume = False
     target_meta_file_name = "meta.jsonl"
     convert_expand_to_lerobot_batch(episodes_root, lerobot_root, task, resume=resume,target_meta_file_name = target_meta_file_name)
