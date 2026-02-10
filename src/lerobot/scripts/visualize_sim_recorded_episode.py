@@ -70,8 +70,8 @@ def visualize_sim_recorded_episode(
     # 可视化主循环
     for frame_idx in tqdm.tqdm(range(num_frames)):
         meta = meta_list[frame_idx]
-        rr.set_time_sequence("frame_index", frame_idx)
-        rr.set_time_seconds("timestamp", meta.get("timestamp", 0))
+        rr.set_time("frame_index", sequence=frame_idx)
+        rr.set_time("timestamp", timestamp=meta.get("timestamp", 0))
         # 相机图片（使用已解析的 cam_dirs，以兼容嵌套）
         for cam, cam_dir in cam_dirs.items():
             img_path = cam_dir / f"frame_{frame_idx:06d}.png"
@@ -91,11 +91,11 @@ def visualize_sim_recorded_episode(
                     eff = j.get("effort", []) or []
                     # 将属性放在顶层命名空间，joint 作为子命名空间
                     for d_idx, v in enumerate(pos):
-                        rr.log(f"position/joint_{j_idx}/dim_{d_idx}", rr.Scalar(float(v)))
+                        rr.log(f"position/joint_{j_idx}/dim_{d_idx}", rr.Scalars(float(v)))
                     for d_idx, v in enumerate(vel):
-                        rr.log(f"velocity/joint_{j_idx}/dim_{d_idx}", rr.Scalar(float(v)))
+                        rr.log(f"velocity/joint_{j_idx}/dim_{d_idx}", rr.Scalars(float(v)))
                     for d_idx, v in enumerate(eff):
-                        rr.log(f"effort/joint_{j_idx}/dim_{d_idx}", rr.Scalar(float(v)))
+                        rr.log(f"effort/joint_{j_idx}/dim_{d_idx}", rr.Scalars(float(v)))
             except Exception:
                 pass
 

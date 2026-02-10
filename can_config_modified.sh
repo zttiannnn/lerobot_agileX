@@ -50,21 +50,20 @@ command -v ip >/dev/null || die "缺少 ip (iproute2)"
 command -v ethtool >/dev/null || die "缺少 ethtool"
 modprobe gs_usb 2>/dev/null || true
 
-# 枚举所有 CAN 网卡（仅取 gs_usb 驱动的）
+# 枚举所有 CAN 网卡
 mapfile -t IFACES < <(ip -br link show type can | awk '{print $1}')
 [[ ${#IFACES[@]} -gt 0 ]] || die "未检测到任何 CAN 接口"
 
-declare -A BUS2IF
+declare -A BUS2IF=()
 for ifc in "${IFACES[@]}"; do
-  # 过滤非 gs_usb（如 vcan）
+  # 获取驱动和总线信息
   drv=$(ethtool -i "$ifc" 2>/dev/null | awk -F': ' '/^driver:/{print $2}')
-  [[ "$drv" == "gs_usb" ]] || continue
   bus=$(ethtool -i "$ifc" 2>/dev/null | awk -F': ' '/^bus-info:/{print $2}')
   [[ -n "$bus" ]] || continue
   BUS2IF["$bus"]="$ifc"
 done
 
-[[ ${#BUS2IF[@]} -gt 0 ]] || die "未找到 gs_usb 设备（bus-info 为空）"
+[[ ${#BUS2IF[@]} -gt 0 ]] || die "未找到有效的 CAN 设备（bus-info 为空）"
 
 find_iface_by_bus() {
   local bus="$1"
