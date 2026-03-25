@@ -4,11 +4,12 @@ set -Eeuo pipefail
 # 用法：
 #  单个设备：
 #    sudo ./can_config_modified.sh --right 1-6:1.0 --rate-right 1000000
+#    sudo ./can_config_modified.sh --left 1-5:1.0 --rate-left 1000000
 #  两个设备：
 #    sudo ./can_config_modified.sh --right 1-6:1.0 --left 1-5:1.0 --rate-right 1000000 --rate-left 1000000
 #
 # 说明：
-#  --right         必填，can_right 的 USB 硬件地址（如 1-6:1.0）
+#  --right         可选，can_right 的 USB 硬件地址（如 1-6:1.0）
 #  --left          可选，can_left  的 USB 硬件地址
 #  --rate-right    可选，右侧比特率，默认 1000000
 #  --rate-left     可选，左侧比特率，默认 1000000
@@ -39,7 +40,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -n "$RIGHT_BUS" ]] || die "必须提供 --right <USB_BUS-ID，比如 1-6:1.0>"
+if [[ -z "$RIGHT_BUS" && -z "$LEFT_BUS" ]]; then
+  die "至少提供一个参数：--right <USB_BUS-ID> 或 --left <USB_BUS-ID>"
+fi
 
 if [[ $EUID -ne 0 && $DRY_RUN -eq 0 ]]; then
   die "请以 root 运行（sudo），或使用 --dry-run 先查看动作"
@@ -115,10 +118,16 @@ config_one() {
 }
 
 # 单/双设备配置
-config_one "can_right" "$RIGHT_BUS" "$RATE_RIGHT"
+if [[ -n "$RIGHT_BUS" ]]; then
+  config_one "can_right" "$RIGHT_BUS" "$RATE_RIGHT"
+else
+  info "未提供 --right，跳过 can_right"
+fi
 
 if [[ -n "$LEFT_BUS" ]]; then
-  [[ "$LEFT_BUS" != "$RIGHT_BUS" ]] || die "--left 不能与 --right 使用相同 bus"
+  if [[ -n "$RIGHT_BUS" ]]; then
+    [[ "$LEFT_BUS" != "$RIGHT_BUS" ]] || die "--left 不能与 --right 使用相同 bus"
+  fi
   config_one "can_left" "$LEFT_BUS" "$RATE_LEFT"
 else
   info "未提供 --left，跳过 can_left"
